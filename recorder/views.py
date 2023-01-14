@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Scene
+from .models import Scene, Audio, AudioForm
 
 
 # Create your views here.
@@ -26,3 +26,17 @@ def edit(request, title):
         "scene" : scenes
     }
     return render(request, 'edit.html', context)
+
+
+class AudioViewSet(viewsets.ModelViewSet):
+    queryset = Audio.objects.all()
+
+    def create(self, request, *args, **kwargs) -> Response:
+
+        dataset_form = AudioForm(request.POST, request.FILES)
+        if dataset_form.is_valid():
+            dataset = dataset_form.save()
+
+            return Response("Done", status=status.HTTP_201_CREATED)
+        else:
+            return Response(dataset_form.error_messages, status=status.HTTP_400_BAD_REQUEST)

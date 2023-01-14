@@ -20,34 +20,56 @@
 </form>
 <br>
 
-<button> Start recording</button>
+<button type="button" id="record">Record</button>
+<button type="button" id="stopRecord" disabled>Stop</button>
 
-</body>
+<audio id=recordedAudio></audio>
+
 <script>
-    navigator.mediaDevices.getUserMedia({audio: true}).then(stream => {
-        audio_handler(stream)
-    });
-    var audio_chunks = [];
+    navigator.mediaDevices.getUserMedia({audio: true})
+        .then(stream => {
+            handlerFunction(stream)
+        })
 
-    audio_handler = function (stream) {
-        rec = new MediaRecorder(stream, {mimeType: 'audio/webm', codecs: "opus"});
-        rec.ondataavailable = function (e) {
-            audio_chunks.push(e.data);
+    function handlerFunction(stream) {
+        rec = new MediaRecorder(stream);
+        rec.ondataavailable = e => {
+            audioChunks.push(e.data);
+            if (rec.state == "inactive") {
+                let blob = new Blob(audioChunks, {type: 'audio/mp3'});
+
+                recordedAudio.src = URL.createObjectURL(blob);
+                recordedAudio.controls = true;
+                recordedAudio.autoplay = true;
+                sendData(blob)
+            }
         }
     }
 
-    //on rec.stop()
-    var blob = new Blob(audio_chunks, {'type': 'audio/wav; codecs=opus'});
-    console.log(blob);
-    var xhttp = new XMLHttpRequest();
-    xhttp.open("POST", "http://localhost:8000/er/", true);
-    var data = new FormData();
-    data.append('data', blob, 'audio_blob');
-    xhttp.send(data);
-    xhttp.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == 200) {
-            console.log(this.responseText);
-        }
-    };
+    async function sendData(data) {
+        let fd = new FormData();
+        fd.append('audio', data, 'test.mp3');
+        await fetch('/audio', {
+            method: 'POST',
+            body: fd
+        });
+
+        window.alert("Upload Success");
+    }
+
+    record.onclick = e => {
+        record.disabled = true;
+        record.style.backgroundColor = "blue"
+        stopRecord.disabled = false;
+        audioChunks = [];
+        rec.start();
+    }
+    stopRecord.onclick = e => {
+        record.disabled = false;
+        stop.disabled = true;
+        record.style.backgroundColor = "red"
+        rec.stop();
+    }
 </script>
+</body>
 </html>

@@ -1,4 +1,5 @@
 from django.db import models
+from django import forms
 
 
 # Create your models here.
@@ -7,3 +8,12 @@ class Scene(models.Model):
     speech = models.TextField(max_length=10000,null=True,blank=True)
     background = models.FileField(upload_to='static/images')
     scene_prompts = models.TextField(max_length=10000)
+
+
+class Audio(models.Model):
+    audio = models.FileField(upload_to='audio')
+
+
+class AudioForm(forms.Form):
+    class Meta:
+        model = Audio
