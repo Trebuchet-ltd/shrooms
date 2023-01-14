@@ -8,6 +8,7 @@ class Scene(models.Model):
     speech = models.TextField(max_length=10000,null=True,blank=True)
     background = models.FileField(upload_to='static/images')
     scene_prompts = models.TextField(max_length=10000)
+    audio = models.ForeignKey('Audio', on_delete=models.CASCADE, null=True, blank=True)
 
 
 class Audio(models.Model):
